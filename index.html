@@ -3,100 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EarnFlow OS</title>
+    <title>EarnFlow OS v2.6</title>
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
-        :root { --bg: #010206; --accent: #00ffa3; --text: #f0f4f8; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; text-align: center; }
-        header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 900; color: var(--accent); }
-        .wallet { margin: 80px auto; padding: 40px; background: rgba(10,15,28,0.9); border-radius: 30px; width: 85%; border: 1px solid rgba(255,255,255,0.05); }
-        .pts { font-size: 4rem; font-weight: 900; margin: 10px 0; }
+        :root { --bg: #010206; --accent: #00ffa3; --text: #f0f4f8; --card: rgba(255,255,255,0.03); }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; text-align: center; -webkit-tap-highlight-color: transparent; }
+        header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 900; color: var(--accent); letter-spacing: 2px; position: sticky; top: 0; background: rgba(1,2,6,0.8); backdrop-filter: blur(10px); z-index: 100; }
+        .wallet { margin: 40px auto; padding: 30px; background: rgba(10,15,28,0.9); border-radius: 30px; width: 85%; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .pts { font-size: 4rem; font-weight: 900; margin: 5px 0; background: linear-gradient(180deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .card { background: rgba(255,255,255,0.03); padding: 25px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
-        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(20px); }
+        .card { background: var(--card); padding: 25px 10px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; }
+        .card:active { transform: scale(0.95); background: var(--accent); color: #000; }
+        #overlay, #redeemModal { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(20px); padding: 20px; }
+        input, select { width: 80%; padding: 15px; border-radius: 12px; margin-bottom: 15px; background: #1a1f2e; color: #fff; border: 1px solid rgba(255,255,255,0.1); font-size: 1rem; }
+        .btn-main { background: var(--accent); color: #000; padding: 18px 40px; border-radius: 50px; font-weight: 900; border: none; cursor: pointer; box-shadow: 0 10px 20px rgba(0,255,163,0.2); }
     </style>
 </head>
 <body onclick="resetIdle()">
-    <header>EARNFLOW OS <span style="font-weight:100; color:#fff;">v2.6</span></header>
-    
+    <header>EARNFLOW OS <span style="font-weight:100; color:#fff;">FOUNDER</span></header>
+
     <div class="wallet">
-        <div style="font-size:0.7rem; letter-spacing:4px; color:#718096;">YOUR EARNINGS</div>
+        <div style="font-size:0.7rem; letter-spacing:4px; color:#718096; text-transform: uppercase;">Founder Balance</div>
         <div class="pts" id="balance">0</div>
-        <div style="color:var(--accent); font-weight:bold;">≈ ₹<span id="rupee">0.00</span></div>
+        <div style="color:var(--accent); font-weight:bold; font-size:1.2rem;">≈ ₹<span id="rupee">0.00</span></div>
     </div>
 
     <div class="grid" id="assetGrid"></div>
 
+    <button onclick="openRedeem()" style="margin: 10px 0 40px; background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 12px 30px; border-radius: 50px; font-weight: bold;">REDEEM VOUCHERS</button>
+
     <div id="overlay">
-        <h2 style="color:var(--accent);">SYNC PAUSE</h2>
-        <p style="color:#718096; margin-bottom:30px;">Verify session for Founder Tier Bonus</p>
-        <a id="verifyLink" href="#" target="_blank" style="color:#fff; padding:20px 40px; border:1px solid var(--accent); border-radius:50px; text-decoration:none; font-weight:900;">CLICK TO VERIFY</a>
-        <button onclick="resume()" style="margin-top:25px; background:var(--accent); border:none; padding:15px 30px; border-radius:50px; font-weight:bold;">RESUME SESSION</button>
+        <h2 style="color:var(--accent); font-size: 2.5rem; margin: 0;">SYNC PAUSE</h2>
+        <p style="color:#718096; margin-bottom:30px;">Verify session to unlock 95% Founder Tier.</p>
+        <a id="vLink" href="" target="_blank" style="color:#fff; padding:20px 40px; border:2px solid var(--accent); border-radius:50px; text-decoration:none; font-weight:900; letter-spacing: 1px;">CLICK TO VERIFY</a>
+        <button onclick="resume()" style="margin-top:25px; background:transparent; color:#718096; border:none; text-decoration: underline;">I've Verified (Resume)</button>
+    </div>
+
+    <div id="redeemModal">
+        <h2 style="color:var(--accent);">REDEEM CENTER</h2>
+        <p style="color:#718096; font-size: 0.8rem; margin-bottom: 20px;">Minimum threshold: 10,000 PTS</p>
+        <select id="vType">
+            <option value="PhonePe">PhonePe / UPI Cashback</option>
+            <option value="Amazon">Amazon Gift Card</option>
+            <option value="Flipkart">Flipkart Voucher</option>
+            <option value="Myntra">Myntra Credit</option>
+        </select>
+        <input id="uContact" type="text" placeholder="Phone Number / UPI ID">
+        <button class="btn-main" onclick="submitRedeem()">REQUEST VOUCHER</button>
+        <button onclick="closeRedeem()" style="margin-top:20px; background:transparent; color:#fff; border:none;">Close</button>
     </div>
 
     <script>
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
 
-        // REGISTER SERVICE WORKER FOR ALL-DEVICE INSTALL
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js');
-}
-
-// PROMPT INSTALL ON PC/LAPTOP
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Optional: You can trigger a custom "Install App" button here
-});
-        
-        // --- PASTE YOUR LINKS HERE ---
         const webHook = "https://script.google.com/macros/s/AKfycbzfxP_BcL-5meqL5Kr-Xakyfh3oRvqxb2sGP1gO-9iTC6CVDSo4NqlPxt1USxTpUEDi9Q/exec"; 
         const directLink = "https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019";
-        // -----------------------------
+        document.getElementById("vLink").href = directLink;
 
-        document.getElementById("verifyLink").href = directLink;
         let pts = 0, idle = 0, isBreak = false;
 
-        function sync(val) {
-            if(webHook.includes("http")) {
-                fetch(webHook, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    body: JSON.stringify({ 
-                        points: pts, 
-                        admin: val * 0.05, 
-                        founder: isBreak ? val * 0.95 : val * 0.9, 
-                        source: window.location.hostname 
-                    })
-                });
+        function sync(val, isRedeem = false, extraData = {}) {
+            let payload = { points: pts, source: window.location.hostname };
+            if(isRedeem) {
+                payload.type = "REDEEM";
+                payload.voucher = extraData.voucher;
+                payload.user = extraData.user;
+            } else {
+                payload.admin = val * 0.05;
+                payload.founder = isBreak ? val * 0.95 : val * 0.90;
             }
+            fetch(webHook, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload)});
         }
 
         function trigger(p) {
-            pts += p; 
+            pts += p;
             document.getElementById("balance").innerText = pts.toLocaleString();
             document.getElementById("rupee").innerText = (pts * 0.15).toFixed(2);
-            sync(p); 
+            sync(p);
             window.open(directLink, "_blank");
         }
 
         function resetIdle() { idle = 0; }
         function resume() { isBreak = true; resetIdle(); document.getElementById("overlay").style.display = "none"; }
+        function openRedeem() { 
+            if(pts < 10000) { alert("Min. 10,000 PTS required to redeem."); return; }
+            document.getElementById("redeemModal").style.display = "flex"; 
+        }
+        function closeRedeem() { document.getElementById("redeemModal").style.display = "none"; }
         
-        setInterval(() => { 
-            idle++; 
-            if(idle >= 60) document.getElementById("overlay").style.display = "flex"; 
-        }, 60000);
+        function submitRedeem() {
+            const v = document.getElementById("vType").value;
+            const u = document.getElementById("uContact").value;
+            if(!u) { alert("Please enter contact details!"); return; }
+            sync(0, true, { voucher: v, user: u });
+            alert("Request Sent! Voucher will be sent to " + u + " within 48h.");
+            closeRedeem();
+        }
 
-        const assets = [{n:"Equity", p:350}, {n:"Gold", p:280}, {n:"Tech", p:240}, {n:"Estate", p:400}];
+        setInterval(() => { idle++; if(idle >= 60) document.getElementById("overlay").style.display = "flex"; }, 60000);
+
+        const assets = [{n:"Venture Equity", p:350}, {n:"Gold Bullion", p:280}, {n:"Tech Node", p:240}, {n:"Luxury Estate", p:400}];
         assets.forEach(a => {
-            document.getElementById("assetGrid").innerHTML += `
-                <div class="card" onclick="trigger(${a.p})">
-                    <div style="font-size:0.6rem; color:var(--accent);">ASSET</div>
-                    <b>${a.n}</b><br/>
-                    <span style="color:var(--accent); font-weight:900;">+${a.p}</span>
-                </div>`;
+            document.getElementById("assetGrid").innerHTML += `<div class="card" onclick="trigger(${a.p})"><div style="font-size:0.5rem; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;">Digital Asset</div><b style="font-size:1.1rem;">${a.n}</b><br/><span style="color:var(--accent); font-weight:900; font-size:1.2rem;">+${a.p}</span></div>`;
         });
     </script>
 </body>
