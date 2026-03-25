@@ -1,31 +1,38 @@
-/* EARNFLOW OS MASTER BACKEND - v18.0 */
-function doGet(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("Video_Catalog") || ss.insertSheet("Video_Catalog");
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(["Title", "YouTube ID", "Duration", "Refresh Rate (Sec)"]);
-    sheet.appendRow(["Deep Sleep 12h", "lh4JdZTJe7k", "12 Hours", "30"]);
-  }
-  var data = sheet.getDataRange().getValues();
-  var videos = [];
-  for (var i = 1; i < data.length; i++) {
-    if(data[i][1]) videos.push({title: data[i][0], id: data[i][1], duration: data[i][2], rate: data[i][3]});
-  }
-  return ContentService.createTextOutput(JSON.stringify(videos)).setMimeType(ContentService.MimeType.JSON);
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EarnFlow Hub | Premium Streaming</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        :root { --bg: #0f0f0f; --card: #1e1e1e; --accent: #00ffa3; --red: #ff0000; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
+        header { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: var(--bg); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #333; }
+        .logo { display: flex; align-items: center; cursor: pointer; font-weight: 900; font-size: 20px; }
+        .logo span { color: var(--red); font-size: 30px; margin-right: 5px; }
+        #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; padding: 20px; }
+        .v-card { cursor: pointer; border-radius: 12px; transition: 0.2s; background: var(--card); overflow: hidden; }
+        .v-card:hover { transform: translateY(-3px); border: 1px solid var(--accent); }
+        .thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+        #cinema { display: none; flex-direction: column; height: 100vh; background: #000; }
+        #adGrid { height: 50vh; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; }
+        .ad-node { width: 100%; height: 100%; border: none; background: #050505; }
+        #stealthHub { display: none; position: fixed; inset: 0; background: #fff; color: #fff; z-index: 9999; font-size: 1px; opacity: 0.01; pointer-events: none; }
+    </style>
+</head>
+<body>
 
-function doPost(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var data = JSON.parse(e.postData.contents);
-  var now = new Date();
-  var uL = ss.getSheetByName("User_Ledger") || ss.insertSheet("User_Ledger");
-  var fV = ss.getSheetByName("Founder_Vault") || ss.insertSheet("Founder_Vault");
-  var aR = ss.getSheetByName("App_Revenue") || ss.insertSheet("App_Revenue");
-  
-  /* Log 95% to Founder, 5% to App */
-  uL.appendRow([now, data.uid, data.added, data.total]);
-  fV.appendRow([now, data.uid, data.added * 0.95, data.source]);
-  aR.appendRow([now, data.uid, data.added * 0.05]);
-  
-  return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
-}
+    <header>
+        <div class="logo" onclick="location.reload()"><span class="material-symbols-outlined">play_circle</span>EarnFlow Hub</div>
+        <div style="background:var(--accent); color:#000; padding:4px 12px; border-radius:20px; font-weight:bold; font-size:12px;">₹<span id="bal">0.00</span></div>
+    </header>
+
+    <div id="gallery">
+        <h3 style="padding-left: 20px; color: #aaa;">Loading Premium Nodes...</h3>
+    </div>
+
+    <div id="cinema">
+        <iframe id="mainVid" style="width:100%; height:45vh; border:none;" allow="autoplay"></iframe>
+        <div id="adGrid">
+            <iframe class="ad-node
