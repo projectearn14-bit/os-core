@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EarnFlow OS — Founder Edition</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@900&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #010206;
+            --surface: rgba(10, 15, 28, 0.95);
+            --accent: #00ffa3;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f0f4f8;
+            --text-dim: #718096;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Instrument Sans', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* HIDE BROWSER UI IN STANDALONE MODE */
+        @media (display-mode: standalone) {
+            header { padding-top: 40px; }
+        }
+
+        .bg-glow {
+            position: fixed; inset: 0; z-index: -1;
+            background: radial-gradient(circle at 0% 0%, #081a12 0%, transparent 50%),
+                        radial-gradient(circle at 100% 100%, #0a0e1a 0%, transparent 50%);
+        }
+
+        header {
+            position: fixed; top: 0; width: 100%; height: 75px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 30px; background: rgba(1,2,6,0.8);
+            backdrop-filter: blur(20px); z-index: 1000;
+            border-bottom: 1px solid var(--border); box-sizing: border-box;
+        }
+
+        .container { max-width: 500px; margin: 100px auto 40px; padding: 0 20px; }
+
+        .wallet {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 32px; padding: 40px 20px;
+            text-align: center; box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+        }
+
+        .balance-label { text-transform: uppercase; font-size: 0.7rem; letter-spacing: 4px; color: var(--text-dim); margin-bottom: 10px; }
+        .pts-main { font-family: 'Cabinet Grotesk', sans-serif; font-size: 4.5rem; font-weight: 900; background: linear-gradient(180deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+
+        .prog-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 25px 0; overflow: hidden; }
+        #barFill { height: 100%; width: 0%; background: var(--accent); transition: 1.5s cubic-bezier(0.19, 1, 0.22, 1); }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
+        .card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 20px; padding: 25px 15px;
+            cursor: pointer; transition: 0.3s;
+        }
+        .card:active { transform: scale(0.95); background: rgba(0,255,163,0.1); }
+
+        #idleOverlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.98); backdrop-filter: blur(60px);
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            padding: 20px;
+        }
+
+        .btn-verify {
+            background: var(--accent); color: #000;
+            padding: 20px 40px; border-radius: 50px;
+            font-weight: 900; border: none; cursor: pointer;
+            text-transform: uppercase; margin-top: 20px;
+        }
+    </style>
+</head>
+<body onclick="resetIdle()">
+
+<div class="bg-glow"></div>
+
+<header>
+    <div style="font-family: 'Cabinet Grotesk'; font-weight:900; font-size:1.4rem; color:var(--accent);">EARNFLOW <span style="font-weight:100; color:#fff;">OS</span></div>
+    <div style="background:rgba(255,255,255,0.05); padding:8px 15px; border-radius:50px; font-weight:800; border: 1px solid var(--border); font-size: 0.9rem;">🪙 <span id="navPts">0</span></div>
+</header>
+
+<div class="container">
+    <div class="wallet">
+        <div class="balance-label">Your Earnings</div>
+        <div class="pts-main" id="balance">0</div>
+        <div style="color:var(--accent); font-weight:800; font-size:1.3rem; margin-top:10px;">≈ ₹<span id="rupee">0.00</span></div>
+        
+        <div class="prog-bar"><div id="barFill"></div></div>
+        <div id="status" style="font-size:0.8rem; color:var(--text-dim); font-weight:600;">Verify 50 Assets to Unlock Payout.</div>
+    </div>
+
+    <div class="grid" id="assetGrid"></div>
+</div>
+
+<div id="idleOverlay">
+    <h1 style="font-family: 'Cabinet Grotesk'; color:var(--accent); font-size:2.5rem; margin:0;">SYNC PAUSE</h1>
+    <p style="color:var(--text-dim); margin:20px 0;">Verify session to maintain Founder Tier earnings (+5% Break Bonus).</p>
+    
+    <div style="margin-bottom:30px; background:rgba(255,255,255,0.03); padding:30px; border-radius:25px; border:1px solid var(--accent);">
+        <a href="YOUR_ADSTERRA_DIRECT_LINK" target="_blank" style="color:#fff; text-decoration:none; font-weight:900; font-size:1.1rem;">[ CLICK TO VERIFY ]</a>
+    </div>
+    
+    <button class="btn-verify" onclick="resumeSession()">RESUME SESSION</button>
+</div>
+
+<script>
+    let points = 0, clicks = 0, idle = 0, isBreak = false;
+    const GO
