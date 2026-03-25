@@ -3,128 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EarnFlow OS — Founder Edition</title>
-    
+    <title>EarnFlow OS</title>
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <link rel="manifest" href="manifest.json">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@900&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
-
     <style>
-        :root {
-            --bg: #010206;
-            --surface: rgba(10, 15, 28, 0.95);
-            --accent: #00ffa3;
-            --border: rgba(255, 255, 255, 0.08);
-            --text: #f0f4f8;
-            --text-dim: #718096;
-        }
-
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Instrument Sans', sans-serif;
-            margin: 0;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* HIDE BROWSER UI IN STANDALONE MODE */
-        @media (display-mode: standalone) {
-            header { padding-top: 40px; }
-        }
-
-        .bg-glow {
-            position: fixed; inset: 0; z-index: -1;
-            background: radial-gradient(circle at 0% 0%, #081a12 0%, transparent 50%),
-                        radial-gradient(circle at 100% 100%, #0a0e1a 0%, transparent 50%);
-        }
-
-        header {
-            position: fixed; top: 0; width: 100%; height: 75px;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 30px; background: rgba(1,2,6,0.8);
-            backdrop-filter: blur(20px); z-index: 1000;
-            border-bottom: 1px solid var(--border); box-sizing: border-box;
-        }
-
-        .container { max-width: 500px; margin: 100px auto 40px; padding: 0 20px; }
-
-        .wallet {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 32px; padding: 40px 20px;
-            text-align: center; box-shadow: 0 40px 80px rgba(0,0,0,0.6);
-        }
-
-        .balance-label { text-transform: uppercase; font-size: 0.7rem; letter-spacing: 4px; color: var(--text-dim); margin-bottom: 10px; }
-        .pts-main { font-family: 'Cabinet Grotesk', sans-serif; font-size: 4.5rem; font-weight: 900; background: linear-gradient(180deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
-
-        .prog-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 25px 0; overflow: hidden; }
-        #barFill { height: 100%; width: 0%; background: var(--accent); transition: 1.5s cubic-bezier(0.19, 1, 0.22, 1); }
-
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
-        .card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            border-radius: 20px; padding: 25px 15px;
-            cursor: pointer; transition: 0.3s;
-        }
-        .card:active { transform: scale(0.95); background: rgba(0,255,163,0.1); }
-
-        #idleOverlay {
-            position: fixed; inset: 0; z-index: 9999;
-            background: rgba(0,0,0,0.98); backdrop-filter: blur(60px);
-            display: none; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center;
-            padding: 20px;
-        }
-
-        .btn-verify {
-            background: var(--accent); color: #000;
-            padding: 20px 40px; border-radius: 50px;
-            font-weight: 900; border: none; cursor: pointer;
-            text-transform: uppercase; margin-top: 20px;
-        }
+        :root { --bg: #010206; --accent: #00ffa3; --text: #f0f4f8; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; text-align: center; }
+        header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 900; color: var(--accent); }
+        .wallet { margin: 80px auto; padding: 40px; background: rgba(10,15,28,0.9); border-radius: 30px; width: 85%; border: 1px solid rgba(255,255,255,0.05); }
+        .pts { font-size: 4rem; font-weight: 900; margin: 10px 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .card { background: rgba(255,255,255,0.03); padding: 25px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(20px); }
     </style>
 </head>
 <body onclick="resetIdle()">
-
-<div class="bg-glow"></div>
-
-<header>
-    <div style="font-family: 'Cabinet Grotesk'; font-weight:900; font-size:1.4rem; color:var(--accent);">EARNFLOW <span style="font-weight:100; color:#fff;">OS</span></div>
-    <div style="background:rgba(255,255,255,0.05); padding:8px 15px; border-radius:50px; font-weight:800; border: 1px solid var(--border); font-size: 0.9rem;">🪙 <span id="navPts">0</span></div>
-</header>
-
-<div class="container">
+    <header>EARNFLOW OS <span style="font-weight:100; color:#fff;">v2.6</span></header>
+    
     <div class="wallet">
-        <div class="balance-label">Your Earnings</div>
-        <div class="pts-main" id="balance">0</div>
-        <div style="color:var(--accent); font-weight:800; font-size:1.3rem; margin-top:10px;">≈ ₹<span id="rupee">0.00</span></div>
-        
-        <div class="prog-bar"><div id="barFill"></div></div>
-        <div id="status" style="font-size:0.8rem; color:var(--text-dim); font-weight:600;">Verify 50 Assets to Unlock Payout.</div>
+        <div style="font-size:0.7rem; letter-spacing:4px; color:#718096;">YOUR EARNINGS</div>
+        <div class="pts" id="balance">0</div>
+        <div style="color:var(--accent); font-weight:bold;">≈ ₹<span id="rupee">0.00</span></div>
     </div>
 
     <div class="grid" id="assetGrid"></div>
-</div>
 
-<div id="idleOverlay">
-    <h1 style="font-family: 'Cabinet Grotesk'; color:var(--accent); font-size:2.5rem; margin:0;">SYNC PAUSE</h1>
-    <p style="color:var(--text-dim); margin:20px 0;">Verify session to maintain Founder Tier earnings (+5% Break Bonus).</p>
-    
-    <div style="margin-bottom:30px; background:rgba(255,255,255,0.03); padding:30px; border-radius:25px; border:1px solid var(--accent);">
-        <a href="YOUR_ADSTERRA_DIRECT_LINK" target="_blank" style="color:#fff; text-decoration:none; font-weight:900; font-size:1.1rem;">[ CLICK TO VERIFY ]</a>
+    <div id="overlay">
+        <h2 style="color:var(--accent);">SYNC PAUSE</h2>
+        <p style="color:#718096; margin-bottom:30px;">Verify session for Founder Tier Bonus</p>
+        <a id="verifyLink" href="#" target="_blank" style="color:#fff; padding:20px 40px; border:1px solid var(--accent); border-radius:50px; text-decoration:none; font-weight:900;">CLICK TO VERIFY</a>
+        <button onclick="resume()" style="margin-top:25px; background:var(--accent); border:none; padding:15px 30px; border-radius:50px; font-weight:bold;">RESUME SESSION</button>
     </div>
-    
-    <button class="btn-verify" onclick="resumeSession()">RESUME SESSION</button>
-</div>
 
-<script>
-    let points = 0, clicks = 0, idle = 0, isBreak = false;
-    const GO
+    <script>
+        // --- PASTE YOUR LINKS HERE ---
+        const webHook = "https://script.google.com/macros/s/AKfycbzfxP_BcL-5meqL5Kr-Xakyfh3oRvqxb2sGP1gO-9iTC6CVDSo4NqlPxt1USxTpUEDi9Q/exec"; 
+        const directLink = "https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019";
+        // -----------------------------
+
+        document.getElementById("verifyLink").href = directLink;
+        let pts = 0, idle = 0, isBreak = false;
+
+        function sync(val) {
+            if(webHook.includes("http")) {
+                fetch(webHook, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify({ 
+                        points: pts, 
+                        admin: val * 0.05, 
+                        founder: isBreak ? val * 0.95 : val * 0.9, 
+                        source: window.location.hostname 
+                    })
+                });
+            }
+        }
+
+        function trigger(p) {
+            pts += p; 
+            document.getElementById("balance").innerText = pts.toLocaleString();
+            document.getElementById("rupee").innerText = (pts * 0.15).toFixed(2);
+            sync(p); 
+            window.open(directLink, "_blank");
+        }
+
+        function resetIdle() { idle = 0; }
+        function resume() { isBreak = true; resetIdle(); document.getElementById("overlay").style.display = "none"; }
+        
+        setInterval(() => { 
+            idle++; 
+            if(idle >= 60) document.getElementById("overlay").style.display = "flex"; 
+        }, 60000);
+
+        const assets = [{n:"Equity", p:350}, {n:"Gold", p:280}, {n:"Tech", p:240}, {n:"Estate", p:400}];
+        assets.forEach(a => {
+            document.getElementById("assetGrid").innerHTML += `
+                <div class="card" onclick="trigger(${a.p})">
+                    <div style="font-size:0.6rem; color:var(--accent);">ASSET</div>
+                    <b>${a.n}</b><br/>
+                    <span style="color:var(--accent); font-weight:900;">+${a.p}</span>
+                </div>`;
+        });
+    </script>
+</body>
+</html>
