@@ -2,110 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EarnFlow Eternal v5.0</title>
-    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EarnFlow Cinema v9.0</title>
     <style>
-        :root { --bg: #000000; --accent: #00ffa3; }
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: var(--bg); font-family: sans-serif; }
+        :root { --bg: #000; --accent: #00ffa3; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; text-align: center; }
+        .container { padding: 20px; }
+        .video-card { background: #111; border: 1px solid #222; border-radius: 15px; margin: 15px 0; padding: 20px; cursor: pointer; transition: 0.3s; }
+        .video-card:hover { border-color: var(--accent); transform: scale(1.02); }
+        .duration { font-size: 12px; color: #718096; }
         
-        /* TOP 50%: PERMANENT AD ENGINE */
-        #adSection { height: 50vh; width: 100%; border-bottom: 3px solid var(--accent); position: relative; overflow: hidden; }
-        #adFrame { width: 100%; height: 100%; border: none; }
-        .ad-tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: var(--accent); padding: 5px 10px; font-size: 10px; border-radius: 5px; font-weight: bold; pointer-events: none; }
-
-        /* REVENUE BAR */
-        #revenueBar { height: 6vh; background: #111; display: flex; justify-content: space-around; align-items: center; color: #fff; font-size: 11px; border-bottom: 1px solid #222; }
-        .status-on { color: var(--accent); }
-        .status-off { color: #ff4b4b; }
-
-        /* BOTTOM 44%: GAME ENGINE */
-        #gameSection { height: 44vh; width: 100%; background: #050505; }
-        #gameFrame { width: 100%; height: 100%; border: none; }
-
-        /* ACTIVITY WARNING */
-        #idleOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        /* CINEMA VIEW (Hidden initially) */
+        #cinema { display: none; height: 100vh; flex-direction: column; }
+        #playerBox { height: 45vh; border-bottom: 2px solid var(--accent); }
+        #adFarm { height: 50vh; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr); gap: 2px; }
+        .ad-frame { width: 100%; height: 100%; border: none; }
     </style>
 </head>
-<body onmousemove="recordActivity()" onclick="recordActivity()" ontouchstart="recordActivity()">
+<body>
 
-    <div id="adSection">
-        <div class="ad-tag">LIVE REVENUE NODE: ACTIVE</div>
-        <iframe id="adFrame" src="https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019"></iframe>
+    <div id="menu" class="container">
+        <h1 style="color:var(--accent);">WATCH & EARN</h1>
+        <p style="font-size:12px; color:#718096;">Select a video to start your revenue node.</p>
+        <div id="videoList">Loading your library...</div>
     </div>
 
-    <div id="revenueBar">
-        <div>USER: <span id="uid" style="color:#718096;">...</span></div>
-        <div>EARNED: <b id="pts" style="color:var(--accent);">0</b></div>
-        <div>STATUS: <span id="status" class="status-on">RECORDING</span></div>
-    </div>
-
-    <div id="gameSection">
-        <iframe id="gameFrame" src="https://www.gamepix.com/play/drift-hunters"></iframe>
-    </div>
-
-    <div id="idleOverlay">
-        <h2 style="color:var(--accent);">INACTIVITY DETECTED</h2>
-        <p style="color:#fff; text-align:center;">Move or Tap to continue earning.<br>Revenue pauses after 1 hour of no action.</p>
-        <button onclick="resumeEarning()" style="background:var(--accent); border:none; padding:15px 40px; border-radius:50px; font-weight:bold; cursor:pointer;">RESUME EARNING</button>
+    <div id="cinema">
+        <div id="playerBox"><iframe id="player" style="width:100%; height:100%; border:none;"></iframe></div>
+        <div id="adFarm">
+            <iframe id="ad1" class="ad-frame" src="https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019"></iframe>
+            <iframe id="ad2" class="ad-frame" src="https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019"></iframe>
+            <iframe id="ad3" class="ad-frame" src="https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019"></iframe>
+            <iframe id="ad4" class="ad-frame" src="https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019"></iframe>
+            <iframe id="ad5" class="ad-frame" src="https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019"></iframe>
+            <iframe id="ad6" class="ad-frame" src="https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019"></iframe>
+        </div>
     </div>
 
     <script>
-        const webHook = "https://script.google.com/macros/s/AKfycbzfxP_BcL-5meqL5Kr-Xakyfh3oRvqxb2sGP1gO-9iTC6CVDSo4NqlPxt1USxTpUEDi9Q/exec";
-        
+        const webHook = "REPLACE_WITH_YOUR_APPS_SCRIPT_URL"; // Paste your Web App URL here
         let userId = localStorage.getItem('earnflow_uid') || 'USER-' + Math.random().toString(36).substr(2, 7).toUpperCase();
         localStorage.setItem('earnflow_uid', userId);
-        document.getElementById('uid').innerText = userId;
 
-        let points = parseInt(localStorage.getItem('earnflow_pts')) || 0;
-        document.getElementById('pts').innerText = points.toLocaleString();
-
-        let lastActivity = Date.now();
-        let isIdle = false;
-
-        function recordActivity() {
-            lastActivity = Date.now();
-            if(isIdle) resumeEarning();
-        }
-
-        function resumeEarning() {
-            isIdle = false;
-            document.getElementById('idleOverlay').style.display = 'none';
-            document.getElementById('status').innerText = "RECORDING";
-            document.getElementById('status').className = "status-on";
-        }
-
-        // --- THE ENGINE LOOP (EVERY 60 SECONDS) ---
-        setInterval(() => {
-            const now = Date.now();
-            const oneHour = 3600000; // 1 Hour in Milliseconds
-
-            if (now - lastActivity > oneHour) {
-                isIdle = true;
-                document.getElementById('idleOverlay').style.display = 'flex';
-                document.getElementById('status').innerText = "PAUSED";
-                document.getElementById('status').className = "status-off";
-                return; // Stop earning
-            }
-
-            // 1. ADD POINTS
-            points += 75; // Passive points for staying active
-            document.getElementById('pts').innerText = points.toLocaleString();
-            localStorage.setItem('earnflow_pts', points);
-            
-            // 2. SYNC TO FOUNDER LEDGER
-            fetch(webHook, {
-                method: 'POST', mode: 'no-cors',
-                body: JSON.stringify({
-                    uid: userId, added: 75, total: points,
-                    admin: 75 * 0.05, founder: 75 * 0.95, source: "EternalHub"
-                })
+        // 1. FETCH VIDEOS FROM SHEET
+        fetch(webHook).then(res => res.json()).then(data => {
+            const list = document.getElementById('videoList');
+            list.innerHTML = "";
+            data.forEach(v => {
+                list.innerHTML += `
+                    <div class="video-card" onclick="startCinema('${v.id}', ${v.rate})">
+                        <b style="color:var(--accent);">${v.title}</b><br>
+                        <span class="duration">${v.duration} Node</span>
+                    </div>`;
             });
+        });
 
-            // 3. REFRESH AD TO GET PAID AGAIN
-            document.getElementById('adFrame').src = document.getElementById('adFrame').src;
+        // 2. START THE REVENUE NODE
+        function startCinema(id, rate) {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('cinema').style.display = 'flex';
+            document.getElementById('player').src = `https://www.youtube.com/watch?v=GrI391nlq0g6?id=${id}&autoplay=1`;
 
-        }, 60000);
+            // THE HEXA-REFRESH ENGINE
+            setInterval(() => {
+                for(let i=1; i<=6; i++) { 
+                    let frame = document.getElementById('ad' + i);
+                    frame.src = frame.src; 
+                }
+                
+                // Sync Earnings (Founders get 95%)
+                fetch(webHook, {
+                    method: 'POST', mode: 'no-cors',
+                    body: JSON.stringify({ uid: userId, added: 100, source: "Cinema-V9" })
+                });
+            }, rate * 1000);
+
+            // Wiggle mouse/scroll to keep session alive
+            setInterval(() => { window.scrollBy(0, 1); window.scrollBy(0, -1); }, 5000);
+        }
     </script>
 </body>
 </html>
