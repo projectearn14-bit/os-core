@@ -1,49 +1,48 @@
 function launchEngine(vidId, rate) {
-    // 1. SMART CLEANER: Extracts ID even if you pasted a full link in the sheet
-    let cleanId = vidId.toString().trim();
-    if (cleanId.includes("v=")) {
-        cleanId = cleanId.split("v=")[1].split("&")[0];
-    } else if (cleanId.includes("be/")) {
-        cleanId = cleanId.split("be/")[1].split("?")[0];
-    }
-    cleanId = cleanId.replace(/['"]+/g, ''); // Removes accidental quotes
+    // 1. CLEAN THE ID (Removes any accidental spaces/quotes)
+    const cleanId = vidId.toString().replace(/['"]+/g, "").trim();
 
     // 2. UI TRANSITION
     document.getElementById('gallery').style.display = 'none';
     document.getElementById('cinema').style.display = 'flex';
 
-    // 3. SET THE PLAYER (Using BACKTICKS `` for the URL)
+    // 3. SET THE PLAYER (Using Backticks and strict Referrer Policy)
     const player = document.getElementById('mainVid');
     player.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
     player.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
     
-    // Use backticks (found below the Esc key)
-    player.src = `https://www.youtube-nocookie.com/embed/${cleanId}?autoplay=1&mute=1&rel=0&showinfo=0&modestbranding=1`;
+    // Using YouTube-nocookie for better compatibility
+    player.src = `https://www.youtube-nocookie.com/embed/${cleanId}?autoplay=1&mute=1&rel=0&modestbranding=1`;
 
     // 4. ACTIVATE 8 AD NODES
-    for(let i=1; i<=8; i++) {
+    for (let i = 1; i <= 8; i++) {
         let adNode = document.getElementById('n' + i);
-        if(adNode) adNode.src = adLink;
+        if (adNode) adNode.src = adLink;
     }
 
     // 5. REVENUE LOOP (₹4 Crore Logic)
     setInterval(() => {
         // Refresh all 8 ads
-        for(let i=1; i<=8; i++) {
+        for (let i = 1; i <= 8; i++) {
             let node = document.getElementById('n' + i);
-            if(node) node.src = node.src;
+            if (node) node.src = node.src;
         }
-        
+
         // Add Points (₹1.50 per cycle)
         pts += 150;
         localStorage.setItem('earnflow_pts', pts);
-        if(typeof updateBal === 'function') updateBal();
+        if (typeof updateBal === 'function') updateBal();
 
         // Log to Founder Vault (95% Share)
-        fetch(webHook, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            body: JSON.stringify({ uid: userId, added: 150, total: pts, source: "Cinema_V16.1_Fix" }) 
+        fetch(webHook, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({
+                uid: userId,
+                added: 150,
+                total: pts,
+                source: "Cinema_V16_Fixed"
+            })
         });
     }, rate * 1000);
 
