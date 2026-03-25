@@ -36,6 +36,20 @@
     </div>
 
     <script>
+
+        // REGISTER SERVICE WORKER FOR ALL-DEVICE INSTALL
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+
+// PROMPT INSTALL ON PC/LAPTOP
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Optional: You can trigger a custom "Install App" button here
+});
+        
         // --- PASTE YOUR LINKS HERE ---
         const webHook = "https://script.google.com/macros/s/AKfycbzfxP_BcL-5meqL5Kr-Xakyfh3oRvqxb2sGP1gO-9iTC6CVDSo4NqlPxt1USxTpUEDi9Q/exec"; 
         const directLink = "https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019";
