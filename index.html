@@ -3,118 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnFlow Cinema v10.0</title>
+    <title>EarnFlow Cinema Hub</title>
     <style>
-        :root { --yt-red: #ff0000; --bg: #0f0f0f; --card-bg: #1e1e1e; --accent: #00ffa3; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: "Roboto", Arial, sans-serif; overflow-x: hidden; }
-        
-        /* HEADER */
+        :root { --bg: #0f0f0f; --accent: #00ffa3; --card: #1e1e1e; --yt-red: #ff0000; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: "Roboto", sans-serif; }
         header { height: 60px; background: var(--bg); display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid #333; position: sticky; top:0; z-index:100; justify-content: space-between; }
-        .logo { font-weight: bold; font-size: 20px; letter-spacing: -1px; }
+        .logo { font-weight: bold; font-size: 20px; }
         .logo span { background: var(--yt-red); padding: 2px 6px; border-radius: 4px; margin-right: 5px; }
+        
+        /* GALLERY VIEW */
+        #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px; }
+        .v-card { cursor: pointer; border-radius: 12px; overflow: hidden; background: var(--card); transition: 0.3s; }
+        .v-card:hover { transform: translateY(-5px); border: 1px solid var(--accent); }
+        .thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #333; }
+        .v-meta { padding: 12px; }
+        .v-title { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
+        .v-duration { color: #aaa; font-size: 12px; }
 
-        /* GALLERY GRID */
-        #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        .v-card { cursor: pointer; transition: 0.2s; }
-        .v-card:hover { transform: scale(1.02); }
-        .thumb { width: 100%; aspect-ratio: 16/9; background: #333; border-radius: 12px; object-fit: cover; }
-        .v-info { padding: 10px 0; display: flex; gap: 10px; }
-        .v-title { font-weight: bold; font-size: 16px; line-height: 1.4; color: #fff; }
-        .v-meta { color: #aaa; font-size: 12px; margin-top: 4px; }
-
-        /* CINEMA VIEW */
-        #cinema { display: none; flex-direction: column; height: 100vh; }
-        #playerBox { width: 100%; height: 50vh; background: #000; position: relative; }
-        #adGrid { height: 45vh; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; gap: 4px; padding: 4px; background: #000; }
-        .ad-frame { width: 100%; height: 100%; border: none; background: #111; }
-
-        /* AUTO HANDSHAKE NOTIFIER */
-        #handshake { position: fixed; bottom: 10px; left: 10px; font-size: 9px; color: var(--accent); opacity: 0.5; }
+        /* PLAYER VIEW (AUTO-REVENUE MODE) */
+        #playerView { display: none; flex-direction: column; height: 100vh; }
+        #videoContainer { height: 45vh; background: #000; border-bottom: 2px solid var(--accent); }
+        #adStack { height: 50vh; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; gap: 5px; padding: 5px; background: #050505; }
+        .ad-slot { width: 100%; height: 100%; border: none; background: #111; }
+        
+        /* HUD & HANDSHAKE */
+        #hud { position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); padding: 10px 20px; border-radius: 50px; font-size: 12px; border: 1px solid var(--accent); z-index: 1000; }
+        #handshakeMsg { font-size: 8px; color: var(--accent); margin-top: 5px; text-align: center; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo"><span>Earn</span>Flow Cinema</div>
-        <div id="userStats" style="font-size: 12px; color: var(--accent);">BAL: ₹<span id="balDisplay">0.00</span></div>
+        <div class="logo"><span>Earn</span>Flow Hub</div>
+        <div style="font-size: 14px; color:var(--accent);">₹<span id="bal">0.00</span></div>
     </header>
 
     <div id="gallery"></div>
 
-    <div id="cinema">
-        <div id="playerBox">
-            <iframe id="mainPlayer" style="width:100%; height:100%; border:none;" allow="autoplay"></iframe>
+    <div id="playerView">
+        <div id="videoContainer">
+            <iframe id="mainVid" style="width:100%; height:100%; border:none;" allow="autoplay"></iframe>
         </div>
-        <div id="adGrid">
-            <iframe id="ad1" class="ad-frame"></iframe><iframe id="ad2" class="ad-frame"></iframe>
-            <iframe id="ad3" class="ad-frame"></iframe><iframe id="ad4" class="ad-frame"></iframe>
-            <iframe id="ad5" class="ad-frame"></iframe><iframe id="ad6" class="ad-frame"></iframe>
-            <iframe id="ad7" class="ad-frame"></iframe><iframe id="ad8" class="ad-frame"></iframe>
+        <div id="adStack">
+            <iframe class="ad-slot" id="a1"></iframe><iframe class="ad-slot" id="a2"></iframe>
+            <iframe class="ad-slot" id="a3"></iframe><iframe class="ad-slot" id="a4"></iframe>
+            <iframe class="ad-slot" id="a5"></iframe><iframe class="ad-slot" id="a6"></iframe>
+            <iframe class="ad-slot" id="a7"></iframe><iframe class="ad-slot" id="a8"></iframe>
         </div>
     </div>
 
-    <div id="handshake">ESTABLISHING HANDSHAKE...</div>
+    <div id="hud" style="display:none;">
+        REVENUE ACTIVE <div id="handshakeMsg">SYNCING...</div>
+    </div>
 
     <script>
-        const webHook = "YOUR_APPS_SCRIPT_URL"; // PASTE YOUR URL HERE
+        const webHook = "PASTE_YOUR_SCRIPT_URL_HERE"; 
         const adLink = "https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019";
         
         let userId = localStorage.getItem('earnflow_uid') || 'U-' + Math.random().toString(36).substr(2, 6).toUpperCase();
         localStorage.setItem('earnflow_uid', userId);
+        
+        let pts = parseInt(localStorage.getItem('earnflow_pts')) || 0;
+        document.getElementById('bal').innerText = (pts * 0.01).toFixed(2);
 
-        let currentPts = parseInt(localStorage.getItem('earnflow_pts')) || 0;
-        document.getElementById('balDisplay').innerText = (currentPts * 0.01).toFixed(2);
-
-        // 1. FETCH VIDEOS AND BUILD YOUTUBE GRID
-        fetch(webHook).then(res => res.json()).then(videos => {
-            const gallery = document.getElementById('gallery');
-            videos.forEach(v => {
-                const thumb = `https://img.youtube.com/vi/${v.id}/maxresdefault.jpg`;
-                gallery.innerHTML += `
-                    <div class="v-card" onclick="startCinema('${v.id}', ${v.rate})">
-                        <img src="${thumb}" class="thumb">
-                        <div class="v-info">
-                            <div>
-                                <div class="v-title">${v.title}</div>
-                                <div class="v-meta">${v.duration} • Rewarded Node</div>
-                            </div>
+        // 1. DYNAMICALLY BUILD GALLERY FROM SHEET
+        fetch(webHook).then(r => r.json()).then(data => {
+            const container = document.getElementById('gallery');
+            data.forEach(v => {
+                container.innerHTML += `
+                    <div class="v-card" onclick="startNode('${v.id}', ${v.rate})">
+                        <img class="thumb" src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg">
+                        <div class="v-meta">
+                            <div class="v-title">${v.title}</div>
+                            <div class="v-duration">${v.duration} Continuous Node</div>
                         </div>
                     </div>`;
             });
         });
 
-        // 2. THE CINEMA ENGINE
-        function startCinema(vidId, rate) {
+        // 2. THE REVENUE ENGINE (AUTO-HANDSHAKE)
+        function startNode(vidId, rate) {
             document.getElementById('gallery').style.display = 'none';
-            document.getElementById('cinema').style.display = 'flex';
-            document.getElementById('mainPlayer').src = `https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1&loop=13{vidId}&autoplay=1`;
+            document.getElementById('playerView').style.display = 'flex';
+            document.getElementById('hud').style.display = 'block';
             
-            // Set initial Ad sources
-            for(let i=1; i<=8; i++) document.getElementById('ad'+i).src = adLink;
+            // Start Video
+            document.getElementById('mainVid').src = `https://www.youtube.com/embed/${vidId}?autoplay=1&mute=1`;
+            
+            // Prime 8 Ad Nodes
+            for(let i=1; i<=8; i++) document.getElementById('a'+i).src = adLink;
 
-            // THE REVENUE CYCLE
+            // REVENUE LOOP
             setInterval(() => {
-                // Refresh 8 Ads
-                for(let i=1; i<=8; i++) { let a = document.getElementById('ad'+i); a.src = a.src; }
+                // Refresh 8 Ads Simultaneously
+                for(let i=1; i<=8; i++) { let f = document.getElementById('a'+i); f.src = f.src; }
                 
-                // Add Points (150 pts per refresh)
-                currentPts += 150;
-                localStorage.setItem('earnflow_pts', currentPts);
-                document.getElementById('balDisplay').innerText = (currentPts * 0.01).toFixed(2);
+                // Add Points & Sync
+                pts += 150;
+                localStorage.setItem('earnflow_pts', pts);
+                document.getElementById('bal').innerText = (pts * 0.01).toFixed(2);
 
-                // Sync to Triple Ledger (User / Founder 95% / App 5%)
                 fetch(webHook, {
                     method: 'POST', mode: 'no-cors',
-                    body: JSON.stringify({ uid: userId, added: 150, total: currentPts, source: "Cinema_V10" })
+                    body: JSON.stringify({ uid: userId, added: 150, total: pts, source: "Cinema_V11" })
                 });
             }, rate * 1000);
 
-            // AUTO HANDSHAKE (Anti-Idle Movement)
+            // AUTO-HANDSHAKE (Anti-Idle Movement)
             setInterval(() => {
-                window.scrollBy(0, 2);
-                setTimeout(() => window.scrollBy(0, -2), 100);
-                document.getElementById('handshake').innerText = "HANDSHAKE SYNCED: " + new Date().toLocaleTimeString();
-            }, 15000);
+                window.scrollBy(0, 1);
+                setTimeout(() => window.scrollBy(0, -1), 100);
+                document.getElementById('handshakeMsg').innerText = "HANDSHAKE: " + new Date().toLocaleTimeString();
+            }, 10000);
         }
     </script>
 </body>
