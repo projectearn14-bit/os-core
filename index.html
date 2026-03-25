@@ -1,111 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnFlow Cinema Hub | Watch & Earn</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <style>
-        :root { --yt-bg: #0f0f0f; --yt-card: #1e1e1e; --accent: #00ffa3; --red: #ff0000; }
-        body { margin: 0; background: var(--yt-bg); color: #fff; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
-        header { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; position: sticky; top:0; background: var(--yt-bg); z-index: 1000; border-bottom: 1px solid #222; }
-        .logo { display: flex; align-items: center; cursor: pointer; font-weight: 900; letter-spacing: -1px; }
-        .logo span { color: var(--red); font-size: 32px; margin-right: 4px; }
-        .search { background: #121212; border: 1px solid #333; border-radius: 40px; width: 40%; height: 36px; display: flex; align-items: center; padding: 0 15px; color: #888; font-size: 14px; }
-        
-        #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding: 20px; }
-        .v-card { cursor: pointer; border-radius: 12px; transition: 0.2s; position: relative; }
-        .v-card:hover { transform: translateY(-5px); }
-        .thumb { width: 100%; aspect-ratio: 16/9; border-radius: 12px; object-fit: cover; background: #222; }
-        .v-meta { display: flex; gap: 12px; padding: 12px 0; }
-        .v-icon { width: 36px; height: 36px; background: #333; border-radius: 50%; }
-        .v-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; line-height: 1.2; }
-        .v-sub { color: #aaa; font-size: 12px; }
+// THE UPDATED BULLETPROOF ENGINE
+function launchEngine(vidId, rate) {
+    // 1. CLEAN THE ID (Removes any accidental spaces from Google Sheets)
+    const cleanId = vidId.toString().trim();
+    
+    document.getElementById('gallery').style.display = 'none';
+    document.getElementById('cinema').style.display = 'flex';
+    
+    // 2. SET THE PLAYER WITH PRIVACY & REFERRER PERMISSIONS
+    const player = document.getElementById('mainVid');
+    player.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+    player.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
+    player.src = `https://www.youtube-nocookie.com/embed/${cleanId}?autoplay=1&mute=1&rel=0&modestbranding=1`;
+    
+    // 3. ACTIVATE 8 AD NODES
+    for(let i=1; i<=8; i++) document.getElementById('n'+i).src = adLink;
 
-        #playerView { display: none; flex-direction: column; height: 100vh; background: #000; }
-        #vidContainer { height: 45vh; border-bottom: 2px solid var(--accent); position: relative; }
-        #adStack { height: 50vh; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; gap: 4px; padding: 4px; }
-        .ad-node { width: 100%; height: 100%; border: none; background: #050505; }
-        
-        #stealthHub { display: none; position: fixed; inset: 0; background: #fff; color: #fff; z-index: 9999; font-size: 1px; opacity: 0.01; pointer-events: none; }
-    </style>
-</head>
-<body>
-
-    <header>
-        <div class="logo" onclick="location.reload()">
-            <span class="material-symbols-outlined">play_circle</span>EarnFlow Hub
-        </div>
-        <div class="search">Search meditation and wisdom...</div>
-        <div style="background:var(--accent); color:#000; padding:4px 12px; border-radius:20px; font-weight:bold; font-size:12px;">₹<span id="bal">0.00</span></div>
-    </header>
-
-    <div id="gallery"></div>
-
-    <div id="playerView">
-        <div id="vidContainer">
-            <iframe id="mainVid" style="width:100%; height:100%; border:none;" allow="autoplay"></iframe>
-        </div>
-        <div id="adStack">
-            <iframe class="ad-node" id="n1"></iframe><iframe class="ad-node" id="n2"></iframe>
-            <iframe class="ad-node" id="n3"></iframe><iframe class="ad-node" id="n4"></iframe>
-            <iframe class="ad-node" id="n5"></iframe><iframe class="ad-node" id="n6"></iframe>
-            <iframe class="ad-node" id="n7"></iframe><iframe class="ad-node" id="n8"></iframe>
-        </div>
-    </div>
-
-    <div id="stealthHub">
-        Mahabharata episodes | earning app 2026 | Jiddu Krishnamurti wisdom | meditation for sleep 12 hours | passive income ideas India | earn money online free | bhakthi stotras | Vedic stories for kids
-    </div>
-
-    <script>
-        const webHook = "https://script.google.com/macros/s/AKfycbzYTTxTrPWGO0HPHiF6c0W8zuzAAcysLFE8NBUaL2AviJSaOSm4GwMLHp79jwVeH00Aeg/exec"; 
-        const adLink = "https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019";
-        
-        let uid = localStorage.getItem('earnflow_uid') || 'U-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-        localStorage.setItem('earnflow_uid', uid);
-        let pts = parseInt(localStorage.getItem('earnflow_pts')) || 0;
-        document.getElementById('bal').innerText = (pts * 0.01).toFixed(2);
-
-        // Fetch Gallery
-        fetch(webHook).then(r => r.json()).then(data => {
-            const gallery = document.getElementById('gallery');
-            data.forEach(v => {
-                gallery.innerHTML += `
-                <div class="v-card" onclick="launch('${v.id}', ${v.rate})">
-                    <img class="thumb" src="https://img.youtube.com/vi/${v.id}/maxresdefault.jpg">
-                    <div class="v-meta">
-                        <div class="v-icon"></div>
-                        <div>
-                            <div class="v-title">${v.title}</div>
-                            <div class="v-sub">${v.duration} • Rewarded Cinema Mode</div>
-                        </div>
-                    </div>
-                </div>`;
-            });
-        });
-
-        function launch(vid, rate) {
-            document.getElementById('gallery').style.display = 'none';
-            document.getElementById('playerView').style.display = 'flex';
-            document.getElementById('mainVid').src = `https://www.youtube.com/embed/${vid}?autoplay=1&mute=1`;
-            
-            // Activate Nodes
-            for(let i=1; i<=8; i++) document.getElementById('n'+i).src = adLink;
-
-            // Revenue Loop
-            setInterval(() => {
-                for(let i=1; i<=8; i++) { let f = document.getElementById('n'+i); f.src = f.src; }
-                pts += 150; // 10 refreshes = 1500pts = ₹15
-                localStorage.setItem('earnflow_pts', pts);
-                document.getElementById('bal').innerText = (pts * 0.01).toFixed(2);
-                
-                fetch(webHook, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ uid: uid, added: 150, total: pts, source: "Cinema_V14" })});
-            }, rate * 1000);
-
-            // Handshake (Anti-Idle)
-            setInterval(() => { window.scrollBy(0,1); setTimeout(()=>window.scrollBy(0,-1),100); }, 15000);
+    // 4. REVENUE LOOP (₹4 Crore Logic)
+    setInterval(() => {
+        for(let i=1; i<=8; i++) { 
+            let node = document.getElementById('n'+i); 
+            node.src = node.src; 
         }
-    </script>
-</body>
-</html>
+        
+        pts += 150;
+        localStorage.setItem('earnflow_pts', pts);
+        updateBal();
+
+        fetch(webHook, {
+            method: 'POST', mode: 'no-cors',
+            body: JSON.stringify({ uid: userId, added: 150, total: pts, source: "Cinema_V16_Bulletproof" })
+        });
+    }, rate * 1000);
+
+    // 5. AUTO-HANDSHAKE (Anti-Idle)
+    setInterval(() => {
+        window.scrollBy(0, 1);
+        setTimeout(() => window.scrollBy(0, -1), 100);
+    }, 10000);
+}
