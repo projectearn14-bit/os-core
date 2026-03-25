@@ -1,47 +1,31 @@
-function launchEngine(vidId, rate) {
-  var cleanId = vidId.toString().trim();
-  if (cleanId.includes("v=")) { 
-    cleanId = cleanId.split("v=")[1].split("&")[0]; 
-  } else if (cleanId.includes("be/")) { 
-    cleanId = cleanId.split("be/")[1].split("?")[0]; 
+/* EARNFLOW OS MASTER BACKEND - v18.0 */
+function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Video_Catalog") || ss.insertSheet("Video_Catalog");
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["Title", "YouTube ID", "Duration", "Refresh Rate (Sec)"]);
+    sheet.appendRow(["Deep Sleep 12h", "lh4JdZTJe7k", "12 Hours", "30"]);
   }
-  cleanId = cleanId.replace(/['"]+/g, "");
-
-  document.getElementById('gallery').style.display = 'none';
-  document.getElementById('cinema').style.display = 'flex';
-
-  var player = document.getElementById('mainVid');
-  player.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
-  player.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
-  player.src = "https://www.youtube-nocookie.com/embed/" + cleanId + "?autoplay=1&mute=1&rel=0&modestbranding=1";
-
-  for (var i = 1; i <= 8; i++) {
-    var adNode = document.getElementById('n' + i);
-    if (adNode) { adNode.src = adLink; }
+  var data = sheet.getDataRange().getValues();
+  var videos = [];
+  for (var i = 1; i < data.length; i++) {
+    if(data[i][1]) videos.push({title: data[i][0], id: data[i][1], duration: data[i][2], rate: data[i][3]});
   }
+  return ContentService.createTextOutput(JSON.stringify(videos)).setMimeType(ContentService.MimeType.JSON);
+}
 
-  setInterval(function() {
-    for (var j = 1; j <= 8; j++) {
-      var node = document.getElementById('n' + j);
-      if (node) { node.src = node.src; }
-    }
-    pts += 150;
-    localStorage.setItem('earnflow_pts', pts);
-    if (typeof updateBal === 'function') { updateBal(); }
-    fetch(webHook, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify({
-        uid: userId,
-        added: 150,
-        total: pts,
-        source: "Cinema_V17_Perfect"
-      })
-    });
-  }, rate * 1000);
-
-  setInterval(function() {
-    window.scrollBy(0, 1);
-    setTimeout(function() { window.scrollBy(0, -1); }, 100);
-  }, 15000);
+function doPost(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var data = JSON.parse(e.postData.contents);
+  var now = new Date();
+  var uL = ss.getSheetByName("User_Ledger") || ss.insertSheet("User_Ledger");
+  var fV = ss.getSheetByName("Founder_Vault") || ss.insertSheet("Founder_Vault");
+  var aR = ss.getSheetByName("App_Revenue") || ss.insertSheet("App_Revenue");
+  
+  /* Log 95% to Founder, 5% to App */
+  uL.appendRow([now, data.uid, data.added, data.total]);
+  fV.appendRow([now, data.uid, data.added * 0.95, data.source]);
+  aR.appendRow([now, data.uid, data.added * 0.05]);
+  
+  return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
 }
