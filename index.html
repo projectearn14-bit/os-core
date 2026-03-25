@@ -3,95 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EarnFlow OS v2.6</title>
+    <title>EarnFlow OS v3.0</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
         :root { --bg: #010206; --accent: #00ffa3; --text: #f0f4f8; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
-        header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 900; color: var(--accent); letter-spacing: 2px; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; text-align: center; }
         .wallet { margin: 40px auto; padding: 30px; background: rgba(10,15,28,0.9); border-radius: 30px; width: 85%; border: 1px solid rgba(255,255,255,0.05); }
-        .pts { font-size: 3.5rem; font-weight: 900; margin: 10px 0; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .card { background: rgba(255,255,255,0.03); padding: 25px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
-        #overlay, #redeemModal { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(20px); padding: 20px; }
-        input, select { width: 80%; padding: 15px; border-radius: 12px; margin-bottom: 15px; background: #1a1f2e; color: #fff; border: 1px solid var(--accent); }
+        .pts { font-size: 4rem; font-weight: 900; color: var(--accent); }
+        .uid { font-size: 0.6rem; color: #4a5568; margin-top: 10px; }
+        #assetGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .card { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
-<body onclick="resetIdle()">
-    <header>EARNFLOW OS v2.6</header>
+<body>
+    <header style="padding:20px; color:var(--accent); font-weight:bold;">EARNFLOW OS v3.0</header>
+    
     <div class="wallet">
-        <div style="font-size:0.7rem; color:#718096;">FOUNDER BALANCE</div>
+        <div style="font-size:0.7rem; color:#718096;">CURRENT BALANCE</div>
         <div class="pts" id="balance">0</div>
-        <div style="color:var(--accent); font-weight:bold;">≈ ₹<span id="rupee">0.00</span></div>
+        <div id="userIdDisplay" class="uid">ID: Loading...</div>
     </div>
 
-    <div class="grid" id="assetGrid"></div>
-    <button onclick="openRedeem()" style="margin-bottom:40px; background:transparent; color:var(--accent); border:1px solid var(--accent); padding:10px 30px; border-radius:50px; font-weight:bold;">REDEEM VOUCHERS</button>
-
-    <div id="overlay">
-        <h2 style="color:var(--accent);">SYNC PAUSE</h2>
-        <a id="vLink" href="" target="_blank" style="color:#fff; padding:18px 35px; border:1px solid var(--accent); border-radius:50px; text-decoration:none; font-weight:900;">VERIFY SESSION</a>
-        <button onclick="resume()" style="margin-top:20px; background:var(--accent); border:none; padding:12px 25px; border-radius:50px; font-weight:bold;">RESUME</button>
-    </div>
-
-    <div id="redeemModal">
-        <h2 style="color:var(--accent);">REDEEM CENTER</h2>
-        <select id="vType">
-            <option value="PhonePe">PhonePe / UPI</option>
-            <option value="Amazon">Amazon Voucher</option>
-            <option value="Flipkart">Flipkart Voucher</option>
-        </select>
-        <input id="uContact" type="text" placeholder="UPI ID or Phone Number">
-        <button onclick="submitRedeem()" style="background:var(--accent); color:#000; padding:15px 35px; border-radius:50px; font-weight:bold; border:none;">SUBMIT REQUEST</button>
-        <button onclick="closeRedeem()" style="margin-top:15px; background:transparent; color:#fff; border:none;">Cancel</button>
-    </div>
+    <div id="assetGrid"></div>
+    <button onclick="localStorage.clear(); location.reload();" style="background:none; border:none; color:#333; font-size:10px;">Reset Device Data</button>
 
     <script>
-        const webHook = "https://script.google.com/macros/s/AKfycbzfxP_BcL-5meqL5Kr-Xakyfh3oRvqxb2sGP1gO-9iTC6CVDSo4NqlPxt1USxTpUEDi9Q/exec"; 
-        const directLink = "https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019";
-        document.getElementById("vLink").href = directLink;
+        // --- YOUR CORE LINKS ---
+        const webHook = "https://script.google.com/macros/s/AKfycbzfxP_BcL-5meqL5Kr-Xakyfh3oRvqxb2sGP1gO-9iTC6CVDSo4NqlPxt1USxTpUEDi9Q/exec";
+        const adLink = "https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019";
 
-        let pts = 0, idle = 0, isBreak = false;
+        // 1. GENERATE OR RETRIEVE UNIQUE USER ID
+        let userId = localStorage.getItem('earnflow_uid');
+        if (!userId) {
+            userId = 'USER-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            localStorage.setItem('earnflow_uid', userId);
+        }
+        document.getElementById('userIdDisplay').innerText = "DEVICE ID: " + userId;
 
-        function sync(val, isRedeem = false, extra = {}) {
-            let payload = { points: pts, source: window.location.hostname };
-            if(isRedeem) {
-                payload.type = "REDEEM";
-                payload.voucher = extra.v;
-                payload.user = extra.u;
-            } else {
-                payload.admin = val * 0.05;
-                payload.founder = isBreak ? val * 0.95 : val * 0.9;
-            }
-            fetch(webHook, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload)});
+        // 2. LOAD SAVED POINTS
+        let currentPoints = parseInt(localStorage.getItem('earnflow_pts')) || 0;
+        updateUI();
+
+        function updateUI() {
+            document.getElementById('balance').innerText = currentPoints.toLocaleString();
+            localStorage.setItem('earnflow_pts', currentPoints);
         }
 
-        function trigger(p) {
-            pts += p; document.getElementById("balance").innerText = pts.toLocaleString();
-            document.getElementById("rupee").innerText = (pts * 0.15).toFixed(2);
-            sync(p); window.open(directLink, "_blank");
+        function syncToSheet(pointsAdded) {
+            fetch(webHook, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    uid: userId,
+                    added: pointsAdded,
+                    total: currentPoints,
+                    admin: pointsAdded * 0.05,
+                    founder: pointsAdded * 0.95,
+                    source: window.location.hostname
+                })
+            });
         }
 
-        function resetIdle() { idle = 0; }
-        function resume() { isBreak = true; resetIdle(); document.getElementById("overlay").style.display = "none"; }
-        function openRedeem() { if(pts < 10000) { alert("Need 10,000 PTS to redeem."); return; } document.getElementById("redeemModal").style.display = "flex"; }
-        function closeRedeem() { document.getElementById("redeemModal").style.display = "none"; }
-
-        function submitRedeem() {
-            const v = document.getElementById("vType").value;
-            const u = document.getElementById("uContact").value;
-            if(!u) return alert("Enter contact info!");
-            sync(0, true, {v: v, u: u});
-            alert("Request sent! Will process in 48h.");
-            closeRedeem();
+        function earn(amount) {
+            currentPoints += amount;
+            updateUI();
+            syncToSheet(amount);
+            window.open(adLink, "_blank");
         }
 
-        setInterval(() => { idle++; if(idle >= 60) document.getElementById("overlay").style.display = "flex"; }, 60000);
-
+        // 3. GENERATE ASSETS
         const assets = [{n:"Equity", p:350}, {n:"Gold", p:280}, {n:"Tech", p:240}, {n:"Estate", p:400}];
         assets.forEach(a => {
-            document.getElementById("assetGrid").innerHTML += `<div class="card" onclick="trigger(${a.p})"><div style="font-size:0.5rem; color:var(--accent);">ASSET</div><b>${a.n}</b><br/><span style="color:var(--accent); font-weight:900;">+${a.p}</span></div>`;
+            document.getElementById("assetGrid").innerHTML += `
+                <div class="card" onclick="earn(${a.p})">
+                    <b style="font-size:1.1rem;">${a.n}</b><br/>
+                    <span style="color:var(--accent); font-weight:900;">+${a.p}</span>
+                </div>`;
         });
     </script>
 </body>
