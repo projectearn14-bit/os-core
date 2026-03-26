@@ -17,7 +17,7 @@
         /* The Cart */
         .cart-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
         button { background: var(--accent); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .add-btn { background: #e0e7ff; color: var(--accent); width: auto; padding: 8px 15px; }
+        button:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -27,13 +27,13 @@
         
         <div class="card goal-box">
             <h3>Your Withdrawal Goal</h3>
-            <p>You cannot withdraw cash. Select a goal to unlock your EarnFlow Hub points.</p>
-            <select id="goalSelect" style="padding: 10px; width: 100%; border-radius: 5px;">
+            <p style="font-size: 14px; color: #555;">You cannot withdraw cash. Select a goal to unlock your EarnFlow Hub points.</p>
+            <select id="goalSelect" style="padding: 10px; width: 100%; border-radius: 5px; border: 1px solid #ccc;">
                 <option value="flight">MakeMyTrip Flight Booking (₹5,000)</option>
                 <option value="amazon">Amazon Shopping Voucher (₹2,000)</option>
                 <option value="electricity">TSSPDCL Electricity Bill (Variable)</option>
             </select>
-            <p style="font-size: 12px; color: #666;">Current EarnFlow Balance: <b>₹<span id="efBal">0</span></b></p>
+            <p style="font-size: 13px; color: #666; margin-top: 15px;">Current EarnFlow Balance: <b>₹<span id="efBal">0.00</span></b></p>
         </div>
 
         <div class="card">
@@ -52,16 +52,17 @@
     </div>
 
     <script>
-        const webHook = "YOUR_SCRIPT_URL_HERE"; // Same URL as App 1
+        // MASTER CONFIG
+        const webHook = "https://script.google.com/macros/s/AKfycbwDmyx3AeaEnxRgjzi-nPOdZfUYT74-2JhT_i0tW_G70KlRA8uHOcwgS5WMTm3YdXjcxA/exec"; 
         
-        // Pull balance from App 1 via LocalStorage (if on same domain)
-        let pts = parseInt(localStorage.getItem('earnflow_pts')) || 15000; 
+        // Pull balance from App 1 via LocalStorage
+        let pts = parseInt(localStorage.getItem('earnflow_pts')) || 0; 
         document.getElementById('efBal').innerText = (pts * 0.01).toFixed(2);
 
         function checkoutCart() {
             let uid = localStorage.getItem('ef_uid') || "GUEST_USER";
             
-            // Send cart data to Google Sheets
+            // Send cart data to Google Sheets silently
             fetch(webHook, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -73,7 +74,8 @@
                 })
             });
             
-            alert("Payment Processing! Founder just earned an API Commission.");
+            // Clean, user-facing message
+            alert("Payment Processing... Please wait while we confirm your transaction.");
         }
     </script>
 </body>
