@@ -2,128 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EarnFlow Hub | Premium Streaming</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EarnFlow Pay | Multi-Bill Cart</title>
     <style>
-        :root { --bg: #0f0f0f; --card: #1e1e1e; --accent: #00ffa3; --red: #ff0000; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
-        header { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: var(--bg); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #333; }
-        .logo { display: flex; align-items: center; cursor: pointer; font-weight: 900; font-size: 20px; }
-        .logo span { color: var(--red); font-size: 30px; margin-right: 5px; }
-        #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; padding: 20px; }
-        .v-card { cursor: pointer; border-radius: 12px; transition: 0.2s; background: var(--card); overflow: hidden; }
-        .v-card:hover { transform: translateY(-3px); border: 1px solid var(--accent); }
-        .thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
-        #cinema { display: none; flex-direction: column; height: 100vh; background: #000; }
-        #adGrid { height: 50vh; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; }
-        .ad-node { width: 100%; height: 100%; border: none; background: #050505; }
-        #stealthHub { display: none; position: fixed; inset: 0; background: #fff; color: #fff; z-index: 9999; font-size: 1px; opacity: 0.01; pointer-events: none; }
+        :root { --bg: #f4f7f6; --card: #ffffff; --accent: #2962ff; --text: #102a43; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h2, h3 { margin-top: 0; }
+        
+        /* The Goal Setter */
+        .goal-box { border: 2px dashed var(--accent); padding: 15px; border-radius: 8px; text-align: center; background: #eef2ff; }
+        
+        /* The Cart */
+        .cart-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        button { background: var(--accent); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .add-btn { background: #e0e7ff; color: var(--accent); width: auto; padding: 8px 15px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo" onclick="location.reload()"><span class="material-symbols-outlined">play_circle</span>EarnFlow Hub</div>
-        <div style="background:var(--accent); color:#000; padding:4px 12px; border-radius:20px; font-weight:bold; font-size:12px;">₹<span id="bal">0.00</span></div>
-    </header>
+    <div class="container">
+        <h2>EarnFlow Pay</h2>
+        
+        <div class="card goal-box">
+            <h3>Your Withdrawal Goal</h3>
+            <p>You cannot withdraw cash. Select a goal to unlock your EarnFlow Hub points.</p>
+            <select id="goalSelect" style="padding: 10px; width: 100%; border-radius: 5px;">
+                <option value="flight">MakeMyTrip Flight Booking (₹5,000)</option>
+                <option value="amazon">Amazon Shopping Voucher (₹2,000)</option>
+                <option value="electricity">TSSPDCL Electricity Bill (Variable)</option>
+            </select>
+            <p style="font-size: 12px; color: #666;">Current EarnFlow Balance: <b>₹<span id="efBal">0</span></b></p>
+        </div>
 
-    <div id="gallery">
-        <h3 style="padding-left: 20px; color: #aaa;">Loading Premium Nodes...</h3>
-    </div>
-
-    <div id="cinema">
-        <iframe id="mainVid" style="width:100%; height:45vh; border:none;" allow="autoplay"></iframe>
-        <div id="adGrid">
-            <iframe class="ad-node" id="n1"></iframe><iframe class="ad-node" id="n2"></iframe>
-            <iframe class="ad-node" id="n3"></iframe><iframe class="ad-node" id="n4"></iframe>
-            <iframe class="ad-node" id="n5"></iframe><iframe class="ad-node" id="n6"></iframe>
-            <iframe class="ad-node" id="n7"></iframe><iframe class="ad-node" id="n8"></iframe>
+        <div class="card">
+            <h3>Bill Payment Cart</h3>
+            <div id="cartList">
+                <div class="cart-item"><span>Airtel Postpaid (9876543210)</span> <span>₹749</span></div>
+                <div class="cart-item"><span>HDFC Credit Card</span> <span>₹4,500</span></div>
+                <div class="cart-item"><span>Fasthub FASTag</span> <span>₹1,000</span></div>
+            </div>
+            <div class="cart-item" style="border:none; font-weight:bold; font-size: 18px; margin-top: 10px;">
+                <span>Total to Pay:</span> <span>₹6,249</span>
+            </div>
+            
+            <button onclick="checkoutCart()">Pay All Bills in One Shot</button>
         </div>
     </div>
 
-    <div id="stealthHub">Mahabharata 12 hours full episodes meditation deep sleep music passive income apps India earn money online Jiddu Krishnamurti</div>
-
     <script>
-        // MASTER VARIABLES
-        const webHook = "https://script.google.com/macros/s/AKfycbwDmyx3AeaEnxRgjzi-nPOdZfUYT74-2JhT_i0tW_G70KlRA8uHOcwgS5WMTm3YdXjcxA/exec"; 
-        const adLink = "https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019";
+        const webHook = "YOUR_SCRIPT_URL_HERE"; // Same URL as App 1
         
-        let uid = localStorage.getItem('earnflow_uid') || 'U-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-        localStorage.setItem('earnflow_uid', uid);
-        let pts = parseInt(localStorage.getItem('earnflow_pts')) || 0;
-        document.getElementById('bal').innerText = (pts * 0.01).toFixed(2);
+        // Pull balance from App 1 via LocalStorage (if on same domain)
+        let pts = parseInt(localStorage.getItem('earnflow_pts')) || 15000; 
+        document.getElementById('efBal').innerText = (pts * 0.01).toFixed(2);
 
-        // FETCH CATALOG FROM GOOGLE SHEETS
-        fetch(webHook)
-            .then(res => res.json())
-            .then(data => {
-                const g = document.getElementById('gallery');
-                g.innerHTML = ""; // Clear loading message
-                
-                // If sheet is empty, load a default fallback video
-                if (!data || data.length === 0) {
-                    data = [{ title: "Deep Sleep Recovery (12 Hours)", id: "lh4JdZTJe7k", duration: "12 Hours", rate: 30 }];
-                }
-
-                data.forEach(v => {
-                    g.innerHTML += `
-                    <div class="v-card" onclick="launchEngine('${v.id}', ${v.rate})">
-                        <img class="thumb" src="https://img.youtube.com/vi/${v.id}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${v.id}/hqdefault.jpg'">
-                        <div style="padding:12px;"><b>${v.title}</b><br><span style="color:#aaa; font-size:12px;">${v.duration} Continuous Node</span></div>
-                    </div>`;
-                });
-            })
-            .catch(err => {
-                // Failsafe if Google Sheet is unreachable
-                document.getElementById('gallery').innerHTML = `
-                    <div class="v-card" onclick="launchEngine('lh4JdZTJe7k', 30)">
-                        <img class="thumb" src="https://img.youtube.com/vi/lh4JdZTJe7k/hqdefault.jpg">
-                        <div style="padding:12px;"><b>Emergency Node: Deep Sleep 12h</b><br><span style="color:#aaa; font-size:12px;">Offline Mode Active</span></div>
-                    </div>`;
+        function checkoutCart() {
+            let uid = localStorage.getItem('ef_uid') || "GUEST_USER";
+            
+            // Send cart data to Google Sheets
+            fetch(webHook, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    type: "CHECKOUT_CART",
+                    uid: uid,
+                    cartItems: "Airtel, HDFC, FASTag",
+                    totalCost: 6249
+                })
             });
-
-        // REVENUE ENGINE FUNCTION
-        function launchEngine(vidId, rate) {
-            let cleanId = String(vidId).trim().replace(/['"]+/g, "");
-            if (cleanId.includes("v=")) { cleanId = cleanId.split("v=")[1].split("&")[0]; }
             
-            document.getElementById('gallery').style.display = 'none';
-            document.getElementById('cinema').style.display = 'flex';
-            
-            const player = document.getElementById('mainVid');
-            player.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
-            player.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
-            player.src = "https://www.youtube-nocookie.com/embed/" + cleanId + "?autoplay=1&mute=1&rel=0&modestbranding=1";
-
-            // Turn on all 8 ad slots
-            for(let i=1; i<=8; i++) {
-                document.getElementById('n'+i).src = adLink;
-            }
-
-            // The ₹4 Crore Income Loop
-            setInterval(function() {
-                for(let i=1; i<=8; i++) { 
-                    let node = document.getElementById('n'+i);
-                    if(node) node.src = node.src; 
-                }
-                pts += 150;
-                localStorage.setItem('earnflow_pts', pts);
-                document.getElementById('bal').innerText = (pts * 0.01).toFixed(2);
-                
-                // Send 95% cut to Founder Vault
-                fetch(webHook, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    body: JSON.stringify({ uid: uid, added: 150, total: pts, source: "Cinema_V19_Master" })
-                });
-            }, rate * 1000);
-
-            // Anti-Idle Protocol (Scroll Wiggle)
-            setInterval(function() {
-                window.scrollBy(0, 1);
-                setTimeout(function() { window.scrollBy(0, -1); }, 100);
-            }, 15000);
+            alert("Payment Processing! Founder just earned an API Commission.");
         }
     </script>
 </body>
