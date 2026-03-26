@@ -3,80 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EarnFlow Pay | Multi-Bill Cart</title>
+    <title>EarnFlow | Unified Hub & Pay</title>
     <style>
-        :root { --bg: #f4f7f6; --card: #ffffff; --accent: #2962ff; --text: #102a43; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h2, h3 { margin-top: 0; }
+        /* THEME VARIABLES */
+        :root { --bg: #f4f7f6; --text: #102a43; --card: #ffffff; --accent: #2962ff; --border: #e0e0e0; --hub-accent: #00e676; }
+        [data-theme="dark"] { --bg: #0f0f0f; --text: #ffffff; --card: #1e1e1e; --accent: #2962ff; --border: #333333; --hub-accent: #00ffa3; }
         
-        /* The Goal Setter */
-        .goal-box { border: 2px dashed var(--accent); padding: 15px; border-radius: 8px; text-align: center; background: #eef2ff; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; transition: 0.3s; overflow-x: hidden; }
         
-        /* The Cart */
-        .cart-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-        button { background: var(--accent); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        button:hover { opacity: 0.9; }
+        /* HEADER & TABS */
+        header { display: flex; justify-content: space-between; padding: 15px 20px; background: var(--card); border-bottom: 1px solid var(--border); align-items: center; }
+        .logo { font-size: 22px; font-weight: bold; cursor: pointer; }
+        .logo span { color: red; }
+        .controls { display: flex; gap: 10px; align-items: center; }
+        button { background: var(--accent); color: #fff; border: none; padding: 8px 15px; cursor: pointer; border-radius: 6px; font-weight: bold; }
+        .theme-btn { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .bal-badge { background: var(--hub-accent); color: #000; padding: 8px 15px; border-radius: 20px; font-weight: bold; }
+        
+        .tab-container { display: flex; background: var(--card); border-bottom: 2px solid var(--border); }
+        .tab { flex: 1; text-align: center; padding: 15px; font-weight: bold; cursor: pointer; color: #888; transition: 0.2s; }
+        .tab.active { color: var(--accent); border-bottom: 3px solid var(--accent); background: rgba(41, 98, 255, 0.05); }
+        
+        /* SECTIONS */
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        /* APP 1: HUB STYLES */
+        #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
+        .v-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; overflow: hidden; }
+        .thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #333; }
+        #cinema { display: none; flex-direction: column; height: calc(100vh - 120px); }
+        #vidContainer { height: 60%; width: 100%; background: #000; border-bottom: 2px solid var(--hub-accent); }
+        #adContainer { height: 40%; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; opacity: 0.3; }
+        .ad-slot { width: 100%; height: 100%; border: none; }
+        
+        /* APP 2: PAY STYLES */
+        .pay-container { max-width: 500px; margin: 30px auto; padding: 0 20px; }
+        .pay-card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .promo-banner { background: rgba(244, 67, 54, 0.1); border: 2px dashed #f44336; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; }
+        .cart-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        
+        /* LITE EARNER POPUP */
+        #adModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; }
+        .close-btn { color: white; text-align: right; padding: 15px; font-size: 18px; cursor: pointer; font-weight: bold; background: #000; }
+        #liteVid { height: 40vh; width: 100%; border: none; }
+        #liteAds { height: 40vh; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 5px; opacity: 0.5; padding: 5px; }
     </style>
 </head>
-<body>
+<body data-theme="light">
 
-    <div class="container">
-        <h2>EarnFlow Pay</h2>
-        
-        <div class="card goal-box">
-            <h3>Your Withdrawal Goal</h3>
-            <p style="font-size: 14px; color: #555;">You cannot withdraw cash. Select a goal to unlock your EarnFlow Hub points.</p>
-            <select id="goalSelect" style="padding: 10px; width: 100%; border-radius: 5px; border: 1px solid #ccc;">
-                <option value="flight">MakeMyTrip Flight Booking (₹5,000)</option>
-                <option value="amazon">Amazon Shopping Voucher (₹2,000)</option>
-                <option value="electricity">TSSPDCL Electricity Bill (Variable)</option>
-            </select>
-            <p style="font-size: 13px; color: #666; margin-top: 15px;">Current EarnFlow Balance: <b>₹<span id="efBal">0.00</span></b></p>
+    <header>
+        <div class="logo" onclick="location.reload()"><span>▶</span> EarnFlow</div>
+        <div class="controls">
+            <button class="theme-btn" onclick="toggleTheme()" id="tglBtn">Dark Mode</button>
+            <div class="bal-badge">₹<span id="bal">0.00</span></div>
         </div>
+    </header>
 
-        <div class="card">
-            <h3>Bill Payment Cart</h3>
-            <div id="cartList">
-                <div class="cart-item"><span>Airtel Postpaid (9876543210)</span> <span>₹749</span></div>
-                <div class="cart-item"><span>HDFC Credit Card</span> <span>₹4,500</span></div>
-                <div class="cart-item"><span>Fasthub FASTag</span> <span>₹1,000</span></div>
+    <div class="tab-container">
+        <div class="tab active" id="tabHub" onclick="switchTab('hub')">EarnFlow Hub (Max)</div>
+        <div class="tab" id="tabPay" onclick="switchTab('pay')">EarnFlow Pay (Bills)</div>
+    </div>
+
+    <div id="hubSection" class="section active">
+        <div id="gallery"><h3 style="padding:20px;">Synchronizing Nodes...</h3></div>
+        <div id="cinema">
+            <div id="vidContainer">
+                <iframe id="vidFrame" style="width:100%; height:100%; border:none;" allow="autoplay; encrypted-media"></iframe>
             </div>
-            <div class="cart-item" style="border:none; font-weight:bold; font-size: 18px; margin-top: 10px;">
-                <span>Total to Pay:</span> <span>₹6,249</span>
+            <div id="adContainer">
+                <iframe class="ad-slot" id="a1"></iframe><iframe class="ad-slot" id="a2"></iframe>
+                <iframe class="ad-slot" id="a3"></iframe><iframe class="ad-slot" id="a4"></iframe>
+                <iframe class="ad-slot" id="a5"></iframe><iframe class="ad-slot" id="a6"></iframe>
+                <iframe class="ad-slot" id="a7"></iframe><iframe class="ad-slot" id="a8"></iframe>
             </div>
-            
-            <button onclick="checkoutCart()">Pay All Bills in One Shot</button>
+        </div>
+    </div>
+
+    <div id="paySection" class="section">
+        <div class="pay-container">
+            <div class="promo-banner" onclick="openLiteEarner()">
+                <h3 style="margin: 0; color: #d32f2f;">💰 Want a discount?</h3>
+                <p style="font-size:14px; margin-top:5px; color:var(--text);">Watch short ads right now to earn instant wallet points before you pay your bill!</p>
+            </div>
+            <div class="pay-card" style="margin-top: 20px;">
+                <h3 style="margin-top: 0;">Your Bill Cart</h3>
+                <div class="cart-row"><span>Electricity Bill (TSSPDCL)</span> <span>₹1,200</span></div>
+                <div class="cart-row" style="font-weight:bold; font-size:18px; border-bottom: none;"><span>Total Due:</span> <span>₹1,200</span></div>
+                <div style="background: rgba(41, 98, 255, 0.1); padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center;">
+                    <p style="margin: 0; color:var(--accent); font-weight:bold; font-size: 18px;">Wallet Balance: ₹<span id="balPay">0.00</span></p>
+                </div>
+                <button onclick="processPayment()" style="width: 100%; padding: 15px; font-size: 16px; margin-top: 15px;">Pay Securely via Wallet</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adModal">
+        <div class="close-btn" onclick="closeLiteEarner()">✕ Close & Return to Checkout</div>
+        <iframe id="liteVid" allow="autoplay; encrypted-media"></iframe>
+        <div id="liteAds">
+            <iframe class="ad-slot" id="la1"></iframe><iframe class="ad-slot" id="la2"></iframe>
+            <iframe class="ad-slot" id="la3"></iframe><iframe class="ad-slot" id="la4"></iframe>
         </div>
     </div>
 
     <script>
-        // MASTER CONFIG
-        const webHook = "https://script.google.com/macros/s/AKfycbwDmyx3AeaEnxRgjzi-nPOdZfUYT74-2JhT_i0tW_G70KlRA8uHOcwgS5WMTm3YdXjcxA/exec"; 
+        /* MASTER CONFIGURATION */
+        var webHook = "https://script.google.com/macros/s/AKfycbzYTTxTrPWGO0HPHiF6c0W8zuzAAcysLFE8NBUaL2AviJSaOSm4GwMLHp79jwVeH00Aeg/exec";
+        var adLink = "https://www.profitablecpmratenetwork.com/tmit15ri4?key=43c4129bda0d3aa9e82a122ef3875019";
         
-        // Pull balance from App 1 via LocalStorage
-        let pts = parseInt(localStorage.getItem('earnflow_pts')) || 0; 
-        document.getElementById('efBal').innerText = (pts * 0.01).toFixed(2);
+        var uid = localStorage.getItem("ef_uid") || "U-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+        localStorage.setItem("ef_uid", uid);
+        var pts = parseInt(localStorage.getItem("ef_pts")) || 0;
+        
+        var currentInterval = null;
 
-        function checkoutCart() {
-            let uid = localStorage.getItem('ef_uid') || "GUEST_USER";
+        /* INITIALIZE UI */
+        function updateBalUI() {
+            var displayAmt = (pts * 0.01).toFixed(2);
+            document.getElementById("bal").innerText = displayAmt;
+            document.getElementById("balPay").innerText = displayAmt;
+        }
+        updateBalUI();
+
+        function toggleTheme() {
+            var body = document.body;
+            var btn = document.getElementById("tglBtn");
+            if (body.getAttribute("data-theme") === "dark") {
+                body.setAttribute("data-theme", "light");
+                btn.innerText = "Dark Mode";
+            } else {
+                body.setAttribute("data-theme", "dark");
+                btn.innerText = "Light Mode";
+            }
+        }
+
+        /* TAB LOGIC & KILL SWITCH */
+        function switchTab(tabName) {
+            document.getElementById("tabHub").classList.remove("active");
+            document.getElementById("tabPay").classList.remove("active");
+            document.getElementById("hubSection").classList.remove("active");
+            document.getElementById("paySection").classList.remove("active");
             
-            // Send cart data to Google Sheets silently
+            /* The Kill Switch: Stops videos and earning when switching tabs */
+            stopAllEngines();
+
+            if(tabName === "hub") {
+                document.getElementById("tabHub").classList.add("active");
+                document.getElementById("hubSection").classList.add("active");
+                document.getElementById("gallery").style.display = "grid";
+                document.getElementById("cinema").style.display = "none";
+            } else {
+                document.getElementById("tabPay").classList.add("active");
+                document.getElementById("paySection").classList.add("active");
+            }
+        }
+
+        function stopAllEngines() {
+            if(currentInterval) clearInterval(currentInterval);
+            document.getElementById("vidFrame").src = "";
+            document.getElementById("liteVid").src = "";
+            document.getElementById("adModal").style.display = "none";
+        }
+
+        /* ABSOLUTE ID CLEANER */
+        function extractPureID(raw) {
+            var str = String(raw);
+            if (str.indexOf("v=") > -1) str = str.split("v=")[1];
+            else if (str.indexOf("be/") > -1) str = str.split("be/")[1];
+            return str.replace(/[^a-zA-Z0-9_-]/g, "").substring(0, 11);
+        }
+
+        /* FETCH HUB CATALOG */
+        fetch(webHook).then(function(res) { return res.json(); }).then(function(data) {
+            var g = document.getElementById("gallery");
+            g.innerHTML = "";
+            if (!data || data.length === 0) {
+                data = [{ title: "Emergency Recovery Node", id: "jfKfPfyJRdk", duration: "12 Hours", rate: 15 }];
+            }
+            for (var i = 0; i < data.length; i++) {
+                var v = data[i];
+                var pureId = extractPureID(v.id);
+                var html = "<div class='v-card' onclick='startHub(\"" + pureId + "\", " + v.rate + ")'>";
+                html += "<img class='thumb' src='https://img.youtube.com/vi/" + pureId + "/hqdefault.jpg'>";
+                html += "<div style='padding:15px;'><b>" + v.title + "</b><br><small style='color:#888;'>" + v.duration + " Node</small></div></div>";
+                g.innerHTML += html;
+            }
+        }).catch(function() { document.getElementById("gallery").innerHTML = "<h3 style='padding:20px; color:red;'>Database Sync Failed.</h3>"; });
+
+        /* START APP 1 (MAX EARNING) */
+        function startHub(vidId, rate) {
+            stopAllEngines();
+            document.getElementById("gallery").style.display = "none";
+            document.getElementById("cinema").style.display = "flex";
+            document.getElementById("vidFrame").src = "https://www.youtube.com/embed/" + vidId + "?autoplay=1&mute=1&rel=0";
+
+            for (var i = 1; i <= 8; i++) document.getElementById("a" + i).src = adLink;
+
+            /* HUB MATH: 420 pts, 8 Ads */
+            currentInterval = setInterval(function() {
+                for (var j = 1; j <= 8; j++) {
+                    var node = document.getElementById("a" + j);
+                    if (node) node.src = node.src;
+                }
+                pts += 420;
+                localStorage.setItem("ef_pts", pts);
+                updateBalUI();
+                
+                fetch(webHook, { 
+                    method: "POST", mode: "no-cors", 
+                    body: JSON.stringify({ type: "EARN_HUB", uid: uid, added: 420, total: pts }) 
+                });
+            }, rate * 1000);
+        }
+
+        /* START APP 2 POPUP (LITE EARNING) */
+        function openLiteEarner() {
+            stopAllEngines();
+            document.getElementById("adModal").style.display = "flex";
+            document.getElementById("liteVid").src = "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1&rel=0";
+            
+            for(var i=1; i<=4; i++) document.getElementById("la"+i).src = adLink;
+            
+            /* PAY MATH: 100 pts, 4 Ads */
+            currentInterval = setInterval(function() {
+                for(var j=1; j<=4; j++) {
+                    var node = document.getElementById("la"+j);
+                    if(node) node.src = node.src;
+                }
+                pts += 100;
+                localStorage.setItem("ef_pts", pts);
+                updateBalUI();
+                
+                fetch(webHook, { 
+                    method: "POST", mode: "no-cors", 
+                    body: JSON.stringify({ type: "EARN_PAY", uid: uid, added: 100, total: pts }) 
+                });
+            }, 15000);
+        }
+
+        function closeLiteEarner() {
+            stopAllEngines();
+        }
+
+        /* CHECKOUT FUNCTION */
+        function processPayment() {
             fetch(webHook, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({
-                    type: "CHECKOUT_CART",
-                    uid: uid,
-                    cartItems: "Airtel, HDFC, FASTag",
-                    totalCost: 6249
-                })
+                method: "POST", mode: "no-cors",
+                body: JSON.stringify({ type: "CHECKOUT", uid: uid, cartItems: "Electricity Bill", totalCost: 1200 })
             });
-            
-            // Clean, user-facing message
             alert("Payment Processing... Please wait while we confirm your transaction.");
         }
+
+        /* AUTO HANDSHAKE (Anti-Idle) */
+        setInterval(function() { window.scrollBy(0, 1); setTimeout(function() { window.scrollBy(0, -1); }, 100); }, 10000);
     </script>
 </body>
 </html>
